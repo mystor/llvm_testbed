@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>LLVM Helper</title>
+    <style type="text/css" media="screen">
+      #editor {
+        position: absolute;
+        top: 0;
+        right: 50%;
+        bottom: 0;
+        left: 0;
+      }
+      #result {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 50%;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="editor">#import &lt;stdio.h>
+
+int main() {
+    return 0;
+}</div>
+
+    <div id="result">
+    </div>
+
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.1.3/ace.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.1.3/mode-c_cpp.js"></script>
+    <script type="text/javascript">
+      var editor = ace.edit("editor");
+      editor.setTheme("ace/theme/monokai");
+      editor.getSession().setMode("ace/mode/c_cpp");
+
+      var result = ace.edit("result");
+      result.setReadOnly(true);
+      result.setTheme("ace/theme/monokai");
+
+      var old_body = "";
+      function poll() {
+        if (editor.getValue() != old_body) {
+          old_body = editor.getValue();
+          var r = new XMLHttpRequest();
+          r.onload = function() {
+            result.setValue(this.responseText, -1);
+            setTimeout(poll, 2000);
+          }
+
+          var fd = new FormData();
+          fd.append("code", editor.getValue());
+
+          r.open("POST", "/llvm", true);
+          r.send(fd);
+        } else {
+          setTimeout(poll, 2000);
+        }
+      }
+
+      poll();
+    </script>
+  </body>
+</html>
